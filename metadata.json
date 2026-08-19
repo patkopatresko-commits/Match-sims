@@ -1,0 +1,6 @@
+{
+  "name": "Match Quick Simulátor",
+  "description": "Fast, interactive sports and match simulator with live commentary, customizable tactics, tournament brackets, and instant outcomes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
