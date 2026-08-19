@@ -1,61 +1,70 @@
 import React, { useState } from 'react';
 import { 
-  Shield, 
   Zap, 
-  RotateCcw, 
-  FileText, 
-  Activity, 
-  Sliders, 
-  Users, 
-  Flame, 
   Info,
-  Check,
-  Copy
 } from 'lucide-react';
-import { FootballTeamInput, MatchVariables, SimulationOutput } from './types';
-import { DEFAULT_PRESET_CLUBS } from './data/footballTeams';
+import { SimulationOutput } from './types';
 import { simulateRealisticFootballMatch } from './utils/footballEngine';
-import { LineupBuilder } from './components/LineupBuilder';
+import { parseMatchPrompt } from './utils/promptParser';
 import { MatchResultDisplay } from './components/MatchResultDisplay';
+import { PromptMatchInput } from './components/PromptMatchInput';
+
+const DEFAULT_INITIAL_PROMPT = `Team A: Manchester City
+Formation: 4-3-3
+Tactics: High press, attacking mentality, direct high tempo, normal tackling
+Lineup:
+1. Ederson (GK) 88 OVR 7.2 form
+2. Kyle Walker (DF) 84 OVR 6.9 form
+3. Rúben Dias (DF) 89 OVR 7.8 form
+4. Manuel Akanji (DF) 85 OVR 7.3 form
+5. Josko Gvardiol (DF) 86 OVR 7.5 form
+6. Rodri (MF) 91 OVR 8.4 form
+7. Kevin De Bruyne (MF) 91 OVR 8.2 form
+8. Bernardo Silva (MF) 88 OVR 7.9 form
+9. Phil Foden (FW) 89 OVR 8.1 form
+10. Erling Haaland (FW) 91 OVR 8.6 form
+11. Jérémy Doku (FW) 83 OVR 7.4 form
+
+Team B: Real Madrid
+Formation: 4-3-1-2
+Tactics: Attacking mentality, high tempo, mid block, normal tackling
+Lineup:
+1. Thibaut Courtois (GK) 90 OVR 8.0 form
+2. Dani Carvajal (DF) 86 OVR 7.7 form
+3. Éder Militão (DF) 86 OVR 7.4 form
+4. Antonio Rüdiger (DF) 88 OVR 8.1 form
+5. Ferland Mendy (DF) 83 OVR 7.2 form
+6. Aurélien Tchouaméni (MF) 86 OVR 7.5 form
+7. Federico Valverde (MF) 89 OVR 8.3 form
+8. Eduardo Camavinga (MF) 85 OVR 7.6 form
+9. Jude Bellingham (MF) 90 OVR 8.5 form
+10. Kylian Mbappé (FW) 91 OVR 8.7 form
+11. Vinícius Júnior (FW) 90 OVR 8.6 form
+
+Venue: Neutral
+Weather: Clear / Mild
+Referee: Standard`;
 
 export function App() {
-  const [teamA, setTeamA] = useState<FootballTeamInput>(JSON.parse(JSON.stringify(DEFAULT_PRESET_CLUBS[0]))); // Man City
-  const [teamB, setTeamB] = useState<FootballTeamInput>(JSON.parse(JSON.stringify(DEFAULT_PRESET_CLUBS[1]))); // Real Madrid
-  
-  const [matchVars, setMatchVars] = useState<MatchVariables>({
-    venue: 'Neutral',
-    weather: 'Clear / Mild',
-    refereeStrictness: 'Standard',
-    extraTime: false,
-  });
-
+  const [promptText, setPromptText] = useState<string>(DEFAULT_INITIAL_PROMPT);
   const [matchResult, setMatchResult] = useState<SimulationOutput | null>(null);
 
-  // Run simulation instantly
+  // Simulate from Prompt
   const handleSimulate = () => {
-    const output = simulateRealisticFootballMatch(teamA, teamB, matchVars);
+    const parsed = parseMatchPrompt(promptText);
+    const output = simulateRealisticFootballMatch(parsed.teamA, parsed.teamB, parsed.matchVars);
     setMatchResult(output);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSimulateRematch = () => {
-    const output = simulateRealisticFootballMatch(teamA, teamB, matchVars);
+    const parsed = parseMatchPrompt(promptText);
+    const output = simulateRealisticFootballMatch(parsed.teamA, parsed.teamB, parsed.matchVars);
     setMatchResult(output);
   };
 
-  const handleEditLineups = () => {
+  const handleEditPrompt = () => {
     setMatchResult(null);
-  };
-
-  // Quick Clashes
-  const handleLoadMatchup = (idA: string, idB: string) => {
-    const clubA = DEFAULT_PRESET_CLUBS.find(c => c.id === idA);
-    const clubB = DEFAULT_PRESET_CLUBS.find(c => c.id === idB);
-    if (clubA && clubB) {
-      setTeamA(JSON.parse(JSON.stringify(clubA)));
-      setTeamB(JSON.parse(JSON.stringify(clubB)));
-      setMatchResult(null);
-    }
   };
 
   return (
@@ -63,7 +72,7 @@ export function App() {
       
       {/* Top Header */}
       <header className="border-b border-slate-800/90 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-slate-950 font-black text-xl">
               ⚽
@@ -74,7 +83,7 @@ export function App() {
                   Match Quick Simulátor
                 </h1>
                 <span className="text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                  v2.0 Engine
+                  v2.1 Engine
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">
@@ -83,7 +92,7 @@ export function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div>
             {!matchResult ? (
               <button
                 onClick={handleSimulate}
@@ -94,10 +103,10 @@ export function App() {
               </button>
             ) : (
               <button
-                onClick={handleEditLineups}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-all"
+                onClick={handleEditPrompt}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-all cursor-pointer"
               >
-                Edit Lineups
+                Edit Prompt
               </button>
             )}
           </div>
@@ -105,58 +114,31 @@ export function App() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 space-y-5">
         
-        {/* Quick Matchup Presets Bar (shown on setup view) */}
-        {!matchResult && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-            <span className="text-slate-500 font-bold text-[11px] uppercase tracking-wider whitespace-nowrap">
-              Quick Clashes:
-            </span>
-            {[
-              { label: 'Man City vs Real Madrid', idA: 'mci', idB: 'rma' },
-              { label: 'El Clásico (Real vs Barca)', idA: 'rma', idB: 'bar' },
-              { label: 'Arsenal vs Bayern', idA: 'ars', idB: 'bay' },
-              { label: 'Liverpool vs Man City', idA: 'liv', idB: 'mci' },
-            ].map((clash, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleLoadMatchup(clash.idA, clash.idB)}
-                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 font-medium text-xs whitespace-nowrap transition-all"
-              >
-                {clash.label}
-              </button>
-            ))}
-          </div>
-        )}
-
         {/* Operational Constraints Banner */}
         <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex items-start gap-3 text-xs text-slate-400">
           <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <span className="font-bold text-slate-200">Strict Operational Constraints Active:</span>
+            <span className="font-bold text-slate-200">Simulation Engine Active:</span>
             <p className="leading-relaxed">
-              No minute play-by-play commentary • Strict roster sanity (only provided players exist) • Absolute tactical privacy • Form & Gaussian variance weighting • Medical injury reporting.
+              Processes any custom tactics, team names, and lineups. Generates the 6 required match result sections with absolute tactical privacy and zero narrative commentary.
             </p>
           </div>
         </div>
 
-        {/* Content View: Lineup Builder OR Match Results Output */}
+        {/* Dynamic View: Prompt Input OR Match Result */}
         {matchResult ? (
           <MatchResultDisplay
             result={matchResult}
             onSimulateRematch={handleSimulateRematch}
-            onEditLineups={handleEditLineups}
+            onEditLineups={handleEditPrompt}
           />
         ) : (
-          <LineupBuilder
-            teamA={teamA}
-            teamB={teamB}
-            matchVars={matchVars}
-            onChangeTeamA={setTeamA}
-            onChangeTeamB={setTeamB}
-            onChangeMatchVars={setMatchVars}
-            onSimulateMatch={handleSimulate}
+          <PromptMatchInput
+            promptText={promptText}
+            onPromptChange={setPromptText}
+            onSimulate={handleSimulate}
           />
         )}
 
@@ -164,7 +146,7 @@ export function App() {
 
       {/* Footer */}
       <footer className="border-t border-slate-800/80 bg-slate-950 py-4 px-4 text-center text-xs text-slate-500">
-        Match Quick Simulátor • Pure Unbiased Football Simulation Engine
+        Match Quick Simulátor • High-Realism Football Simulation Engine
       </footer>
 
     </div>

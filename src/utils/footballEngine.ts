@@ -65,8 +65,8 @@ export function simulateRealisticFootballMatch(
     return clamp(p.overall + formModifier + matchVariance + staminaModifier, 45, 99);
   };
 
-  const xiA = teamA.startingXI.slice(0, 11);
-  const xiB = teamB.startingXI.slice(0, 11);
+  const xiA = teamA.startingXI;
+  const xiB = teamB.startingXI;
 
   const ratedA = xiA.map(p => ({ player: p, effective: getPlayerEffectiveRating(p) }));
   const ratedB = xiB.map(p => ({ player: p, effective: getPlayerEffectiveRating(p) }));
@@ -83,14 +83,18 @@ export function simulateRealisticFootballMatch(
 
   const avg = (arr: { effective: number }[]) => arr.length ? arr.reduce((s, r) => s + r.effective, 0) / arr.length : 75;
 
-  const attackPowerA = avg(fwA.length ? fwA : ratedA);
-  const midPowerA = avg(mfA.length ? mfA : ratedA);
-  const defPowerA = avg(dfA.length ? dfA : ratedA);
+  // Scale power by squad size (e.g. 10 players vs 11)
+  const squadSizeRatioA = Math.min(Math.max(xiA.length / 11, 0.4), 1.1);
+  const squadSizeRatioB = Math.min(Math.max(xiB.length / 11, 0.4), 1.1);
+
+  const attackPowerA = avg(fwA.length ? fwA : ratedA) * squadSizeRatioA;
+  const midPowerA = avg(mfA.length ? mfA : ratedA) * squadSizeRatioA;
+  const defPowerA = avg(dfA.length ? dfA : ratedA) * squadSizeRatioA;
   const gkPowerA = avg(gkA.length ? gkA : ratedA);
 
-  const attackPowerB = avg(fwB.length ? fwB : ratedB);
-  const midPowerB = avg(mfB.length ? mfB : ratedB);
-  const defPowerB = avg(dfB.length ? dfB : ratedB);
+  const attackPowerB = avg(fwB.length ? fwB : ratedB) * squadSizeRatioB;
+  const midPowerB = avg(mfB.length ? mfB : ratedB) * squadSizeRatioB;
+  const defPowerB = avg(dfB.length ? dfB : ratedB) * squadSizeRatioB;
   const gkPowerB = avg(gkB.length ? gkB : ratedB);
 
   // Tactical Influences (Processed purely behind the scenes, never revealed)
@@ -274,7 +278,7 @@ export function simulateRealisticFootballMatch(
   const scoreB = resultB.goalsCount;
   const allGoalscorers = [...resultA.goalEntries, ...resultB.goalEntries].sort((a, b) => a.minute - b.minute);
 
-  // 4. Injuries & Medical Report Simulation
+  // 4. Injuries & Medical Report Simulation (Tuned to low, realistic frequency: ~10-15% match occurrence)
   const injuryReports: InjuryReport[] = [];
   const injuryDiagnoses = [
     { diagnosis: 'Grade 1 Hamstring Strain', recoveryTimeline: '2-3 weeks', severity: 'Minor' as const },
@@ -284,9 +288,9 @@ export function simulateRealisticFootballMatch(
     { diagnosis: 'Meniscus Tear (Knee)', recoveryTimeline: '2-3 months', severity: 'Severe' as const },
   ];
 
-  // Injury chance depends on tackling, fatigue, and weather
+  // Injury chance lowered to 0.0065 so that the vast majority of matches result in "No injuries sustained"
   const checkPlayerInjury = (player: FootballPlayer, teamName: string, foulRisk: number): InjuryReport | null => {
-    const injuryProb = 0.035 * foulRisk * fatigueWeatherMult;
+    const injuryProb = 0.0065 * foulRisk * fatigueWeatherMult;
     if (Math.random() < injuryProb) {
       const diag = injuryDiagnoses[Math.floor(Math.random() * injuryDiagnoses.length)];
       return {
@@ -512,17 +516,17 @@ Goalscorers: ${formatGoalscorers(allGoalscorers)}
 
 3. 🔋 FINAL FITNESS SHEET
 ${cleanTeamAName}:
-${playerResultsA.map(p => `• ${p.name} (${p.position}): ${p.remainingStamina}% stamina remaining`).join('\n')}
+${playerResultsA.map(p => `• #${p.number} ${p.name} (${p.position}): ${p.remainingStamina}% stamina remaining`).join('\n')}
 
 ${cleanTeamBName}:
-${playerResultsB.map(p => `• ${p.name} (${p.position}): ${p.remainingStamina}% stamina remaining`).join('\n')}
+${playerResultsB.map(p => `• #${p.number} ${p.name} (${p.position}): ${p.remainingStamina}% stamina remaining`).join('\n')}
 
 4. ⭐ INDIVIDUAL PLAYER RATINGS
 ${cleanTeamAName}:
-${playerResultsA.map(p => `• ${p.name} (${p.position}): ${p.rating.toFixed(1)}/10.0`).join('\n')}
+${playerResultsA.map(p => `• #${p.number} ${p.name} (${p.position}): ${p.rating.toFixed(1)}/10.0`).join('\n')}
 
 ${cleanTeamBName}:
-${playerResultsB.map(p => `• ${p.name} (${p.position}): ${p.rating.toFixed(1)}/10.0`).join('\n')}
+${playerResultsB.map(p => `• #${p.number} ${p.name} (${p.position}): ${p.rating.toFixed(1)}/10.0`).join('\n')}
 
 5. 🏅 MAN OF THE MATCH (MOTM)
 ${manOfTheMatch.playerName} (${manOfTheMatch.teamName} - ${manOfTheMatch.rating.toFixed(1)}/10.0)

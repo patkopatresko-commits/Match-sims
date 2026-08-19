@@ -256,7 +256,10 @@ export const MatchResultDisplay: React.FC<MatchResultDisplayProps> = ({
                 <div className="space-y-1.5">
                   {result.playerResultsA.map(p => (
                     <div key={p.playerId} className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/70 text-xs">
-                      <span className="text-slate-300 font-medium">{p.name} <span className="text-[10px] text-slate-500 font-mono">({p.position})</span></span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] text-emerald-400/80 font-bold w-5">#{p.number}</span>
+                        <span className="text-slate-300 font-medium">{p.name} <span className="text-[10px] text-slate-500 font-mono">({p.position})</span></span>
+                      </div>
                       <div className="flex items-center gap-2">
                         <div className="w-16 bg-slate-800 h-2 rounded-full overflow-hidden">
                           <div 
@@ -279,7 +282,10 @@ export const MatchResultDisplay: React.FC<MatchResultDisplayProps> = ({
                 <div className="space-y-1.5">
                   {result.playerResultsB.map(p => (
                     <div key={p.playerId} className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/70 text-xs">
-                      <span className="text-slate-300 font-medium">{p.name} <span className="text-[10px] text-slate-500 font-mono">({p.position})</span></span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] text-cyan-400/80 font-bold w-5">#{p.number}</span>
+                        <span className="text-slate-300 font-medium">{p.name} <span className="text-[10px] text-slate-500 font-mono">({p.position})</span></span>
+                      </div>
                       <div className="flex items-center gap-2">
                         <div className="w-16 bg-slate-800 h-2 rounded-full overflow-hidden">
                           <div 
@@ -315,6 +321,7 @@ export const MatchResultDisplay: React.FC<MatchResultDisplayProps> = ({
                   {result.playerResultsA.map(p => (
                     <div key={p.playerId} className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/70 text-xs">
                       <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] text-emerald-400/80 font-bold w-5">#{p.number}</span>
                         <span className="text-slate-300 font-medium">{p.name}</span>
                         <span className="text-[10px] text-slate-500 font-mono">({p.position})</span>
                         {p.goals > 0 && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1 rounded">⚽ {p.goals}</span>}
@@ -341,6 +348,7 @@ export const MatchResultDisplay: React.FC<MatchResultDisplayProps> = ({
                   {result.playerResultsB.map(p => (
                     <div key={p.playerId} className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800/70 text-xs">
                       <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] text-cyan-400/80 font-bold w-5">#{p.number}</span>
                         <span className="text-slate-300 font-medium">{p.name}</span>
                         <span className="text-[10px] text-slate-500 font-mono">({p.position})</span>
                         {p.goals > 0 && <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1 rounded">⚽ {p.goals}</span>}
