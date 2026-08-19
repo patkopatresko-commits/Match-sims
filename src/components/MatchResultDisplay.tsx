@@ -14,6 +14,7 @@ import {
   Activity
 } from 'lucide-react';
 import { SimulationOutput } from '../types';
+import { sanitizePlayerNameOnly } from '../utils/fieldParser';
 
 interface MatchResultDisplayProps {
   result: SimulationOutput;
@@ -39,12 +40,12 @@ export const MatchResultDisplay: React.FC<MatchResultDisplayProps> = ({
     if (!result.goalscorers.length) return 'None';
     return result.goalscorers
       .map(g => {
-        if (g.assisterName && g.assisterName !== 'pen') {
-          return `${g.scorerName} (${g.assisterName}) - ${g.minute}'`;
-        } else if (g.isPenalty) {
-          return `${g.scorerName} (Pen) - ${g.minute}'`;
+        const scorer = sanitizePlayerNameOnly(g.scorerName);
+        const assister = g.assisterName && g.assisterName !== 'pen' ? sanitizePlayerNameOnly(g.assisterName) : null;
+        if (assister) {
+          return `${scorer} (${assister})`;
         }
-        return `${g.scorerName} - ${g.minute}'`;
+        return scorer;
       })
       .join(', ');
   };

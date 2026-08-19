@@ -9,6 +9,7 @@ import {
   InjuryReport,
   ManOfTheMatch
 } from '../types';
+import { sanitizePlayerNameOnly } from './fieldParser';
 
 /**
  * PROMPT INJECTION SHIELD:
@@ -257,8 +258,8 @@ export function simulateRealisticFootballMatch(
       const assister = isPenalty ? null : pickAssister(scorer.id);
 
       goalEntries.push({
-        scorerName: scorer.name,
-        assisterName: assister ? assister.name : (isPenalty ? 'pen' : null),
+        scorerName: sanitizePlayerNameOnly(scorer.name),
+        assisterName: assister ? sanitizePlayerNameOnly(assister.name) : null,
         minute: min,
         isPenalty,
         teamId
@@ -490,12 +491,12 @@ export function simulateRealisticFootballMatch(
     if (!goals.length) return 'None';
     return goals
       .map(g => {
-        if (g.assisterName && g.assisterName !== 'pen') {
-          return `${g.scorerName} (${g.assisterName}) - ${g.minute}'`;
-        } else if (g.isPenalty) {
-          return `${g.scorerName} (Pen) - ${g.minute}'`;
+        const scorer = sanitizePlayerNameOnly(g.scorerName);
+        const assister = g.assisterName && g.assisterName !== 'pen' ? sanitizePlayerNameOnly(g.assisterName) : null;
+        if (assister) {
+          return `${scorer} (${assister})`;
         }
-        return `${g.scorerName} - ${g.minute}'`;
+        return scorer;
       })
       .join(', ');
   };

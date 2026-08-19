@@ -119,4 +119,8 @@ export interface SimulationOutput {
   medicalReport: string[];
   rawFormattedText: string;
   simulatedAt: number;
+  teamATacticsSummary?: string;
+  teamBTacticsSummary?: string;
+  teamATacticsRaw?: string;
+  teamBTacticsRaw?: string;
 }
