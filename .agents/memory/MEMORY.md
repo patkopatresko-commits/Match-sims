@@ -1,0 +1,1 @@
+- [GitHub sync expectation](github-sync.md) — push bot project changes to the intended GitHub repository after each work batch.
